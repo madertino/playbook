@@ -1,0 +1,33 @@
+---
+- name: Create new user
+  hosts: 62.113.101.13
+  become: yes
+
+  tasks:
+   - name: Create user
+     user:
+      name: cloudru
+      password: $6$KXsVzvcTh/kTpH3X$C/qLk2IB7WqeTXOkYi.toiOt7qrfccBF0bI7MffHalh8MswA2rpzBpVkgGIG7V7w5gDi>
+      shell: /bin/bash
+
+
+   - name: DenyRootLogin
+     shell:
+      cmd: sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+     notify:
+      - restart_ssh
+
+
+   - name: Add public key for cloudru
+     authorized_key:
+       key: "{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
+       user: cloudru
+
+  handlers:
+    - name: restart_ssh
+      shell:
+       cmd: systemctl reload ssh
+
+
+# не очень понял второй пункт. По дефолту авторизация по ключу разрешена, поэтому
+# ничего не писал.
